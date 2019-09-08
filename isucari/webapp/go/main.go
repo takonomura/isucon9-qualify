@@ -279,6 +279,9 @@ func init() {
 }
 
 func main() {
+	initProfiler()
+	initTrace()
+
 	host := os.Getenv("MYSQL_HOST")
 	if host == "" {
 		host = "127.0.0.1"
@@ -313,10 +316,11 @@ func main() {
 		dbname,
 	)
 
-	dbx, err = sqlx.Open("mysql", dsn)
+	db, err := sql.Open(tracedDriver("mysql"), dsn)
 	if err != nil {
 		log.Fatalf("failed to connect to DB: %s.", err.Error())
 	}
+	dbx = sqlx.NewDb(db, "mysql")
 	defer dbx.Close()
 
 	mux := goji.NewMux()
@@ -356,7 +360,7 @@ func main() {
 	mux.HandleFunc(pat.Get("/users/setting"), getIndex)
 	// Assets
 	mux.Handle(pat.Get("/*"), http.FileServer(http.Dir("../public")))
-	log.Fatal(http.ListenAndServe(":8000", mux))
+	log.Fatal(http.ListenAndServe(":8000", withTrace(mux)))
 }
 
 func getSession(r *http.Request) *sessions.Session {
