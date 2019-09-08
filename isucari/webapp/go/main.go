@@ -1037,9 +1037,9 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 		}(t)
 	}
 	wg.Wait()
-	err = concurrentError.Load().(error)
-	if err != nil {
-		log.Print(err)
+	cerr := concurrentError.Load()
+	if cerr != nil {
+		log.Print(cerr)
 		outputErrorMsg(w, http.StatusInternalServerError, "failed to request to shipment service")
 		tx.Rollback()
 		return
