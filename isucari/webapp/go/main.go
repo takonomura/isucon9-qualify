@@ -1022,7 +1022,7 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 		}
 		transactionEvidences = make(map[int64]TransactionEvidence, len(s))
 		for _, c := range s {
-			transactionEvidences[c.ID] = c
+			transactionEvidences[c.ItemID] = c
 		}
 	}
 	var wg sync.WaitGroup
