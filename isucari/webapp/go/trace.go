@@ -13,6 +13,10 @@ import (
 )
 
 func initProfiler() {
+	hostname, _ := os.Hostname()
+	if hostname != "isu01" {
+		return
+	}
 	if err := profiler.Start(profiler.Config{
 		Service:        "isucon-20190905",
 		ServiceVersion: "1.0.0",
@@ -23,6 +27,10 @@ func initProfiler() {
 }
 
 func initTrace() {
+	hostname, _ := os.Hostname()
+	if hostname != "isu01" {
+		return
+	}
 	exporter, err := stackdriver.NewExporter(stackdriver.Options{
 		ProjectID:                os.Getenv("GOOGLE_CLOUD_PROJECT"),
 		TraceSpansBufferMaxBytes: 32 * 1024 * 1024,

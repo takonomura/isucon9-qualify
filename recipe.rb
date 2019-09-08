@@ -34,7 +34,7 @@ package 'percona-toolkit'
 #	action %i[enable start]
 #end
 
-if HOST == 'isu01'
+if HOST == 'isu01' || HOST == 'isu02'
 	service 'mysql' do
 		action %i[disable stop]
 	end
