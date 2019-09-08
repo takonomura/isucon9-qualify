@@ -560,10 +560,44 @@ func getNewItems(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	userIdUnique := make(map[int64]struct{})
+	var userIds []interface{}
+	for _, i := range items {
+		id := i.SellerID
+		if _, ok := userIdUnique[id]; !ok {
+			userIds = append(userIds, id)
+			userIdUnique[id] = struct{}{}
+		}
+	}
+	var users map[int64]UserSimple
+	if len(userIds) > 0 {
+		query, args, err := sqlx.In("SELECT * FROM `users` WHERE `id` IN (?)", userIds)
+		if err != nil {
+			log.Print(err)
+			outputErrorMsg(w, http.StatusInternalServerError, "db error")
+			return
+		}
+		var s []User
+		err = dbx.SelectContext(r.Context(), &s, query, args...)
+		if err != nil {
+			log.Print(err)
+			outputErrorMsg(w, http.StatusInternalServerError, "db error")
+			return
+		}
+		users = make(map[int64]UserSimple, len(s))
+		for _, u := range s {
+			users[u.ID] = UserSimple{
+				ID:           u.ID,
+				AccountName:  u.AccountName,
+				NumSellItems: u.NumSellItems,
+			}
+		}
+	}
+
 	itemSimples := []ItemSimple{}
 	for _, item := range items {
-		seller, err := getUserSimpleByID(dbx, item.SellerID)
-		if err != nil {
+		seller, ok := users[item.SellerID]
+		if !ok {
 			outputErrorMsg(w, http.StatusNotFound, "seller not found")
 			return
 		}
