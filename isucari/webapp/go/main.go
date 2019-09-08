@@ -995,11 +995,17 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 		categories = make(map[int]Category, len(s))
 		for _, c := range s {
 			categories[c.ID] = c
+			if c.ParentID > 0 {
+				p, err := getCategoryByID(tx, c.ParentID)
+				if err == nil {
+					c.ParentCategoryName = p.CategoryName
+				}
+			}
 		}
 	}
 	var transactionEvidences map[int64]TransactionEvidence
 	if len(itemIDs) > 0 {
-		query, args, err := sqlx.In("SELECT c.item_id AS item_id, c.status AS status, s.reserve_id AS reserve_id FROM `transaction_evidences` c INNER JOIN shippings s ON s.transaction_evidence_id = c.id WHERE c.`item_id` IN (?) ", itemIDs)
+		query, args, err := sqlx.In("SELECT c.item_id AS item_id, c.status AS status, s.reserve_id AS reserve_id FROM `transaction_evidences` c LEFT JOIN shippings s ON s.transaction_evidence_id = c.id WHERE c.`item_id` IN (?) ", itemIDs)
 		if err != nil {
 			log.Print(err)
 			outputErrorMsg(w, http.StatusInternalServerError, "db error")
@@ -1026,6 +1032,9 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 	for _, t := range transactionEvidences {
 		go func(t TransactionEvidence) {
 			defer wg.Done()
+			if t.ReserveID == "" {
+				return
+			}
 			ssr, err := APIShipmentStatus(r.Context(), getShipmentServiceURL(r.Context()), &APIShipmentStatusReq{
 				ReserveID: t.ReserveID,
 			})
@@ -1093,7 +1102,12 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 
 		transactionEvidence, ok := transactionEvidences[item.ID]
 		if ok {
-			ssr, _ := shipmentStatuses.Load(item.ID)
+			ssr, ok := shipmentStatuses.Load(item.ID)
+			if !ok {
+				outputErrorMsg(w, http.StatusNotFound, "shipping not found")
+				tx.Rollback()
+				return
+			}
 
 			itemDetail.TransactionEvidenceID = transactionEvidence.ID
 			itemDetail.TransactionEvidenceStatus = transactionEvidence.Status
