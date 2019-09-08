@@ -994,13 +994,13 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 		}
 		categories = make(map[int]Category, len(s))
 		for _, c := range s {
-			categories[c.ID] = c
 			if c.ParentID > 0 {
 				p, err := getCategoryByID(tx, c.ParentID)
 				if err == nil {
 					c.ParentCategoryName = p.CategoryName
 				}
 			}
+			categories[c.ID] = c
 		}
 	}
 	var transactionEvidences map[int64]TransactionEvidence
