@@ -770,12 +770,12 @@ func getNewCategoryItems(w http.ResponseWriter, r *http.Request) {
 	itemSimples := []ItemSimple{}
 	for _, item := range items {
 		seller, ok := users[item.SellerID]
-		if ok {
+		if !ok {
 			outputErrorMsg(w, http.StatusNotFound, "seller not found")
 			return
 		}
 		category, ok := categories[item.CategoryID]
-		if err != nil {
+		if !ok {
 			outputErrorMsg(w, http.StatusNotFound, "category not found")
 			return
 		}
