@@ -2,7 +2,11 @@ HOST = node[:hostname]
 USER = 'isucon'
 
 service 'isucari.golang.service' do
-	action %i[enable start]
+	if HOST != 'isu03'
+		action %i[enable start]
+	else
+		action %i[disable stop]
+	end
 end
 
 ###
@@ -29,6 +33,17 @@ package 'percona-toolkit'
 #service 'redis' do
 #	action %i[enable start]
 #end
+
+if HOST == 'isu01'
+	service 'mysql' do
+		action %i[disable stop]
+	end
+end
+if HOST == 'isu03'
+	service 'nginx' do
+		action %i[disable stop]
+	end
+end
 
 {
 	'nginx' => '/etc/nginx/nginx.conf',

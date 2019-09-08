@@ -40,7 +40,7 @@ skip-external-locking
 #
 # Instead of skip-networking the default is now to listen only on
 # localhost which is more compatible and is not less secure.
-bind-address		= 127.0.0.1
+bind-address		= 172.24.83.45
 #
 # * Fine Tuning
 #
@@ -73,9 +73,9 @@ query_cache_size        = 16M
 log_error = /var/log/mysql/error.log
 #
 # Here you can see queries with especially long duration
-#slow_query_log		= 1
-#slow_query_log_file	= /var/log/mysql/mysql-slow.log
-#long_query_time = 2
+slow_query_log		= 1
+slow_query_log_file	= /var/log/mysql/mysql-slow.log
+long_query_time = 0
 #log-queries-not-using-indexes
 #
 # The following can be used as easy to replay backup logs or for replication.
