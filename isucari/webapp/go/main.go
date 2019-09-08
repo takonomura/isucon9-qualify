@@ -999,7 +999,7 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 	}
 	var transactionEvidences map[int64]TransactionEvidence
 	if len(itemIDs) > 0 {
-		query, args, err := sqlx.In("SELECT c.item_id AS item_id, c.status AS status, s.reserve_id AS reserve_id FROM `transaction_evidences` c INNER JOIN shipping s ON s.transaction_evidence_id = c.id WHERE c.`item_id` IN (?) ", itemIDs)
+		query, args, err := sqlx.In("SELECT c.item_id AS item_id, c.status AS status, s.reserve_id AS reserve_id FROM `transaction_evidences` c INNER JOIN shippings s ON s.transaction_evidence_id = c.id WHERE c.`item_id` IN (?) ", itemIDs)
 		if err != nil {
 			log.Print(err)
 			outputErrorMsg(w, http.StatusInternalServerError, "db error")
