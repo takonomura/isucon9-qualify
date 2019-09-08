@@ -1,7 +1,7 @@
 HOST = node[:hostname]
 USER = 'isucon'
 
-service 'isucon.go.service' do
+service 'isucari.golang.service' do
 	action %i[enable start]
 end
 
