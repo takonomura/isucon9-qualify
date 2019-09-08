@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -1038,6 +1039,13 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 			ssr, err := APIShipmentStatus(r.Context(), getShipmentServiceURL(r.Context()), &APIShipmentStatusReq{
 				ReserveID: t.ReserveID,
 			})
+			if err != nil && strings.HasPrefix(err.Error(), "status code: 400; body: <html>") {
+				log.Printf("Retrying (concurrency: %d)", len(transactionEvidences))
+				time.Sleep(10 * time.Millisecond)
+				ssr, err = APIShipmentStatus(r.Context(), getShipmentServiceURL(r.Context()), &APIShipmentStatusReq{
+					ReserveID: t.ReserveID,
+				})
+			}
 			if err != nil {
 				concurrentError.Store(err)
 				return
