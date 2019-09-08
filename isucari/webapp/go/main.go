@@ -324,6 +324,13 @@ func main() {
 	dbx = sqlx.NewDb(db, "mysql")
 	defer dbx.Close()
 
+	waitDB(db)
+	go pollDB(db)
+
+	db.SetConnMaxLifetime(10 * time.Second)
+	db.SetMaxIdleConns(512)
+	db.SetMaxOpenConns(512)
+
 	mux := goji.NewMux()
 
 	// API
